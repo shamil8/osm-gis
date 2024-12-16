@@ -24,18 +24,14 @@ cd osm-gis
 
 2. Inside the osm-gis directory, you’ll find a script to download the required .osm.pbf files from Geofabrik. Run the script using the following command:
 ```bash
-bash docker/osm2-data/download_osm.sh
+cd docker
+bash ./osm2-data/download_osm.sh
 ```
 
 This will download the latest OSM data for various regions (Africa, Asia, Europe, etc.) and store them in the osm_pbf_files folder.
 
 ## Step 2: Run Docker Compose
-1.	Navigate to the docker folder where your docker-compose.yml file is located:
-```bash
-cd docker
-```
-
-2. Run the following command to start the Docker containers:
+1. Run the following command to start the Docker containers:
 
 ```bash
 docker-compose up

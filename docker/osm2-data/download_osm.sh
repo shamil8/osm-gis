@@ -4,7 +4,7 @@
 base_url="https://download.geofabrik.de"
 
 # Path where you want to store the downloaded files
-output_dir="./"
+output_dir="./osm2-data"
 
 # Create the output directory if it doesn't exist
 mkdir -p "$output_dir"
@@ -12,12 +12,13 @@ mkdir -p "$output_dir"
 # List of Geofabrik regions (you can modify or extend this list)
 regions=(
   "africa"
+  "antarctica"
   "asia"
+  "australia-oceania"
+  "central-america"
   "europe"
   "north-america"
   "south-america"
-  "australia-oceania"
-  "antarctica"
 )
 
 # Loop through the regions and download .osm.pbf files
