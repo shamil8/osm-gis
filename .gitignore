@@ -1,0 +1,15 @@
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+
+# IDEs editors
+.vscode/*
+/.idea
+
+
+# Ignore data folders
+/docker/gis-data
+/docker/osm2-data

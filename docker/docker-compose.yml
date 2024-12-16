@@ -1,0 +1,63 @@
+services:
+  app-tileserv:
+    image: pramsey/pg_tileserv:latest
+    container_name: app-tileserv
+    environment:
+      DATABASE_URL: 'postgres://app:root@app-gis-db/app_db'
+    depends_on:
+      app-gis-db:
+        condition: service_healthy  # Ensure Postgis is ready before running
+    ports:
+      - "7800:7800"
+    restart: always
+
+  # PostgisDB service
+  app-gis-db:
+    image: postgis/postgis:17-3.5-alpine
+    container_name: app-gis-db
+    volumes:
+      - ./gis-data:/gis-data                  # For importing/exporting GIS data
+      - app-gis-db:/var/lib/postgresql/data   # Persistent database storage
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: app_db
+    ports:
+      - "5436:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app_db || exit 1"]  # Ensure Postgis is ready before dependent services start
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped         # Automatically restart unless manually stopped
+
+  # Service for importing OpenStreetMap (OSM) data into the PostGIS database
+  app-osm2pgsql:
+    image: iboates/osm2pgsql:latest
+    platform: linux/amd64
+    container_name: app-osm2pgsql
+    depends_on:
+      app-gis-db:
+        condition: service_healthy  # Ensure Postgis is ready before running
+    volumes:
+      - ./osm2-data:/osm2-data      # For OSM data
+    environment:
+      PGPASSWORD: root             # Password from app-gis-db
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        osm2pgsql \
+          -d app_db \
+          -U app \
+          -H app-gis-db \
+          --create \
+          --slim \
+          -C 2000 \
+          --number-processes 4 \
+          -S /usr/local/share/osm2pgsql/default.style \
+          /osm2-data/*.osm.pbf
+    restart: "no"
+
+volumes:
+  app-gis-db:
