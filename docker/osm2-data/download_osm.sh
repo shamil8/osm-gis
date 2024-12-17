@@ -26,8 +26,8 @@ for region in "${regions[@]}"; do
   echo "Downloading $region..."
   region_url="$base_url/$region-latest.osm.pbf"
 
-  # Download the file using wget
-  wget -q --show-progress --directory-prefix="$output_dir" "$region_url"
+  # Download the file using wget and resume if interrupted
+  wget -c --show-progress --directory-prefix="$output_dir" "$region_url"
 done
 
 echo "All downloads are complete."
