@@ -44,3 +44,27 @@ This will:
 The process might take a few minutes to complete as it pulls the necessary Docker images and starts the containers.
 
 3.	After the services are running, you can access your Tileserver at http://localhost:7800 (depending on your configuration).
+
+# Last fix PostGIS with OSM data in Server  🔧
+Push data to PostGis db from  OSM-pgsql container:
+Access the osm2pgsql container and run the command below to check the transferred data:
+```shell
+osm2pgsql -d app_db -U app -H app-gis-db --create --slim -C 8000 --number-processes 8 -v -S /usr/local/share/osm2pgsql/default.style antarctica-latest.osm.pbf
+```
+
+1. First command: `docker exec -it app-gis-db sh`
+2. Go to pgsql (pass: root): `psql -h app-gis-db -U app -d app_db`
+3. Select data inside PostGis DB:
+```sql
+SELECT
+    ST_X(ST_Transform(way, 4326)) AS x,
+    ST_Y(ST_Transform(way, 4326)) AS y,
+    name,
+    amenity
+FROM
+    public.planet_osm_point
+WHERE
+    amenity = 'cafe'
+LIMIT 3;
+```
+and also increased wall size param in PostGis!
