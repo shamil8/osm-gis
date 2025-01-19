@@ -48,9 +48,10 @@ The process might take a few minutes to complete as it pulls the necessary Docke
 ### If you use PostgREST need to add bellow user to PostGis:
 
 ```sql
-GRANT USAGE ON SCHEMA public TO app;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO app;
+CREATE USER mog WITH PASSWORD 'mog';
+GRANT USAGE ON SCHEMA public TO mog;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO mog;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO mog;
 ```
 
 4.	After the PostgREST is running, you can access your PostgREST at http://localhost:3000 (depending on your configuration).
@@ -81,3 +82,13 @@ WHERE
 LIMIT 3;
 ```
 and also increased wall size param in PostGis!
+
+
+Add view for Points coordinates:
+```sql
+CREATE VIEW public.planet_osm_coordinates AS
+SELECT osm_id, name, amenity,
+    ST_Y(ST_Transform(way, 4326)) AS x,
+    ST_X(ST_Transform(way, 4326)) AS y
+FROM public.planet_osm_point;
+```

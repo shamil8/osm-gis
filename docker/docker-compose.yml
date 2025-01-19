@@ -78,9 +78,9 @@ services:
           -H app-gis-db \
           --create \
           --slim \
-          -C 2000 \
-          --number-processes 4 \
-          -S /usr/local/share/osm2pgsql/default.style \
+          -C 8000 \
+          --number-processes 8 \
+          -v -S /usr/local/share/osm2pgsql/default.style \
           /osm2-data/*.osm.pbf
     restart: "no"
 
