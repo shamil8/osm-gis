@@ -45,6 +45,16 @@ The process might take a few minutes to complete as it pulls the necessary Docke
 
 3.	After the services are running, you can access your Tileserver at http://localhost:7800 (depending on your configuration).
 
+### If you use PostgREST need to add bellow user to PostGis:
+
+```sql
+GRANT USAGE ON SCHEMA public TO app;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO app;
+```
+
+4.	After the PostgREST is running, you can access your PostgREST at http://localhost:3000 (depending on your configuration).
+
 # Last fix PostGIS with OSM data in Server  🔧
 Push data to PostGis db from  OSM-pgsql container:
 Access the osm2pgsql container and run the command below to check the transferred data:
@@ -52,9 +62,12 @@ Access the osm2pgsql container and run the command below to check the transferre
 osm2pgsql -d app_db -U app -H app-gis-db --create --slim -C 8000 --number-processes 8 -v -S /usr/local/share/osm2pgsql/default.style antarctica-latest.osm.pbf
 ```
 
+Example get three Cafe: `curl "http://localhost:3003/planet_osm_point?amenity=eq.cafe&limit=3"`
+
 1. First command: `docker exec -it app-gis-db sh`
 2. Go to pgsql (pass: root): `psql -h app-gis-db -U app -d app_db`
-3. Select data inside PostGis DB:
+3. ANALYZE points: `ANALYZE public.planet_osm_point;`
+4. Select data inside PostGis DB:
 ```sql
 SELECT
     ST_X(ST_Transform(way, 4326)) AS x,

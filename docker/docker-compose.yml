@@ -37,6 +37,25 @@ services:
       - "checkpoint_timeout=15min"
     restart: unless-stopped         # Automatically restart unless manually stopped
 
+  app-postgrest:
+    image: postgrest/postgrest:latest
+    platform: linux/amd64
+    container_name: app-postgrest
+    environment:
+      PGRST_DB_URI: 'postgres://app:root@app-gis-db:5432/app_db'  # Connect to the PostGIS database
+      PGRST_DB_SCHEMAS: 'public'                                   # Schema to expose via REST
+      PGRST_DB_ANON_ROLE: 'app'                                   # Role for anonymous requests
+      PGRST_JWT_SECRET: 'blablaSecret'
+      # Overrides the base URL used within the OpenAPI self-documentation hosted at the API root path
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://localhost:3000
+    depends_on:
+      app-gis-db:
+        condition: service_healthy
+    ports:
+      - "3003:3000"  # Expose PostgREST on port 3000
+    command: [ "postgrest" ]
+    restart: always
+
   # Service for importing OpenStreetMap (OSM) data into the PostGIS database
   app-osm2pgsql:
     image: iboates/osm2pgsql:latest
