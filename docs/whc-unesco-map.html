@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>UNESCO World Heritage Sites Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+    }
+    #map {
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.vectorgrid/dist/Leaflet.VectorGrid.min.js"></script>
+<script>
+  // Initialize the map
+  const map = L.map('map').setView([20, 0], 2);
+
+  // Add a base tile layer
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  // URL settings for vector tiles
+  const vectorServer = "http://localhost:7800/";
+  const vectorLayerId = "public.whc_unesco_2023"; // Replace with your actual layer ID
+  const vectorUrl = `${vectorServer}${vectorLayerId}/{z}/{x}/{y}.pbf`;
+
+  // Function to determine style based on feature properties
+  function getStyle(properties) {
+    let color;
+    switch (properties.category_s) {
+      case 'N':
+        color = 'green'; // Natural
+        break;
+      case 'C':
+        color = 'blue'; // Cultural
+        break;
+      case 'M':
+        color = 'purple'; // Mixed
+        break;
+      default:
+        color = 'gray'; // Default color
+    }
+
+    let fillColor;
+    if (properties.danger === 1) {
+      fillColor = 'red'; // Sites in danger
+    } else {
+      fillColor = color; // Color based on category
+    }
+
+    return {
+      fill: true,
+      fillColor,
+      fillOpacity: 0.6,
+      stroke: true,
+      color: 'black',
+      weight: 1,
+      opacity: 1
+    };
+  }
+
+  // Define the vector tile layer options
+  const vectorTileOptions = {
+    vectorTileLayerStyles: {
+      [vectorLayerId]: function(properties, zoom) {
+        return getStyle(properties);
+      }
+    },
+    interactive: true,
+    getFeatureId: function(f) {
+      return f.properties.gid; // Assuming 'gid' is a unique identifier
+    }
+  };
+
+  // Add the vector tile layer to the map
+  const vectorLayer = L.vectorGrid.protobuf(vectorUrl, vectorTileOptions)
+    .on('click', function(e) {
+      console.log('Feature clicked:', e);  // Log the click event
+    })
+    .addTo(map);
+
+  // Optional: Add a legend
+  const legend = L.control({ position: 'bottomright' });
+
+  legend.onAdd = function (map) {
+    const div = L.DomUtil.create('div', 'info legend'),
+      categories = ['Natural', 'Cultural', 'Mixed'],
+      labels = [];
+
+    // Add legend title
+    div.innerHTML = '<strong>Categories</strong><br>';
+
+    // Loop through categories to create legend items
+    for (let i = 0; i < categories.length; i++) {
+      let color;
+      switch (categories[i]) {
+        case 'Natural':
+          color = 'green';
+          break;
+        case 'Cultural':
+          color = 'blue';
+          break;
+        case 'Mixed':
+          color = 'purple';
+          break;
+        default:
+          color = 'gray';
+      }
+
+      div.innerHTML += `<i style="background: ${color}">${categories[i]}</i><br>`;
+    }
+
+    // Add danger status to the legend
+    div.innerHTML += '<i style="background:red"> In Danger</i><br>';
+
+    return div;
+  };
+
+  legend.addTo(map);
+</script>
+</body>
+</html>

@@ -92,3 +92,13 @@ SELECT osm_id, name, amenity,
     ST_X(ST_Transform(way, 4326)) AS y
 FROM public.planet_osm_point;
 ```
+
+
+## Migrate `.shp` format do PostgisDB
+```shell
+    - docker exec app-gis-db sh -c "shp2pgsql -D -s 4326 /gis-data/pwd_sub_national_2020_100m.shp | psql -U app -d app_db"
+    - docker exec app-gis-db sh -c "shp2pgsql -D -s 4326 -W LATIN1 /gis-data/whc_unesco_2023.shp | psql -U app -d app_db"
+    # - docker exec app-gis-db sh -c "shp2pgsql -D -s 4326 /gis-data/water-polygons/water_polygons.shp | psql -U app -d app_db"
+```
+
+Maybe need to install `apk add --no-cache gettext-libs` inside your app-gis-db container
